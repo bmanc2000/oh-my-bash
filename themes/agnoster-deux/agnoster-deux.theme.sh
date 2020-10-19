@@ -228,7 +228,7 @@ prompt_virtualenv() {
         # corresponds to the version number.
         VENV_VERSION=$(echo $VERSION_OUTPUT | awk '{print $NF}')
 
-        prompt_segment cyan white "$(basename $VIRTUAL_ENV):$(basename $VENV_VERSION)"
+        prompt_segment darkgreen cyan "$(basename $VIRTUAL_ENV):$(basename $VENV_VERSION)"
     fi
 }
 
