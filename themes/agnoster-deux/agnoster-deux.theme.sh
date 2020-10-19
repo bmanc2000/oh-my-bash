@@ -424,6 +424,7 @@ prompt_emacsdir() {
 ## Main prompt
 
 build_prompt() {
+    PR="\n"
     [[ ! -z ${AG_EMACS_DIR+x} ]] && prompt_emacsdir
     prompt_status
     prompt_dir
