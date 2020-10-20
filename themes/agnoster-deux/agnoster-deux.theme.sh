@@ -99,33 +99,41 @@ text_effect() {
 # under the "256 (8-bit) Colors" section, and follow the example for orange below
 fg_color() {
     case "$1" in
-        black)      echo 30;;
-        red)        echo 31;;
-        green)      echo 32;;
-        darkgreen)  echo 38\;5\;22;;
-        yellow)     echo 33;;
-        blue)       echo 34;;
-        lightblue)  echo 38\;5\;6;;
-        magenta)    echo 35;;
-        cyan)       echo 36;;
-        white)      echo 37;;
-        orange)     echo 38\;5\;130;;
+        black)          echo 30;;
+        red)            echo 31;;
+        green)          echo 32;;
+        darkgreen)      echo 38\;5\;22;;
+        yellow)         echo 33;;
+        blue)           echo 34;;
+        lightblue)      echo 38\;5\;6;;
+        magenta)        echo 35;;
+        cyan)           echo 36;;
+        white)          echo 37;;
+        orange)         echo 38\;5\;130;;
+        lightpurple)    echo 38\;5\;105;;
+        gray233)        echo 38\;5\;233;;
+        gray236)        echo 38\;5\;236;;
+        gray240)        echo 38\;5\;240;;
     esac
 }
 
 bg_color() {
     case "$1" in
-        black)      echo 40;;
-        red)        echo 41;;
-        green)      echo 42;;
-        darkgreen)  echo 48\;5\;22;;
-        yellow)     echo 43;;
-        blue)       echo 44;;
-        lightblue)  echo 48\;5\;6;;
-        magenta)    echo 45;;
-        cyan)       echo 46;;
-        white)      echo 47;;
-        orange)     echo 48\;5\;130;;
+        black)          echo 40;;
+        red)            echo 41;;
+        green)          echo 42;;
+        darkgreen)      echo 48\;5\;22;;
+        yellow)         echo 43;;
+        blue)           echo 44;;
+        lightblue)      echo 48\;5\;6;;
+        magenta)        echo 45;;
+        cyan)           echo 46;;
+        white)          echo 47;;
+        orange)         echo 48\;5\;130;;
+        lightpurple)    echo 48\;5\;105;;
+        gray233)        echo 48\;5\;233;;
+        gray236)        echo 48\;5\;236;;
+        gray240)        echo 48\;5\;240;;
     esac;
 }
 
@@ -189,7 +197,7 @@ prompt_segment() {
         debug "pre prompt " $(ansi intermediate[@])
         PR="$PR $(ansi intermediate[@])$SEGMENT_SEPARATOR"
         debug "post prompt " $(ansi codes[@])
-        PR="$PR$(ansi codes[@])"
+        PR="$PR $(ansi codes[@])"
     else
         debug "no current BG, codes is $codes[@]"
         PR="$PR$(ansi codes[@])"
@@ -235,20 +243,27 @@ prompt_virtualenv() {
 ### Prompt components
 # Each component will draw itself, and hide itself if no information needs to be shown
 
-prompt_kubecontext() {
-    local k8s_context=$(kubectl config current-context)
-    if [ -n "$k8s_context" ]; then
-        prompt_segment orange black "k8s:${k8s_context}"
-    fi
-}
-
 # Context: user@hostname (who am I and where am I)
 prompt_context() {
     local user=`whoami`
 
     if [[ $user != $DEFAULT_USER || -n $SSH_CLIENT ]]; then
-        prompt_segment black default "$user@\h"
+#        prompt_segment black default "$user@\h"
+        prompt_segment gray240 default "$user@\h"
     fi
+}
+
+prompt_kubecontext() {
+    local k8s_context=$(kubectl config current-context)
+    if [ -n "$k8s_context" ]; then
+#        prompt_segment orange black "k8s:${k8s_context}"
+        prompt_segment gray236 white "k8s:${k8s_context}"
+    fi
+}
+
+prompt_datetime() {
+    datetime=$(date "+%a %m/%d %I:%M:%S%p")
+    prompt_segment gray233 default "$datetime"
 }
 
 # prints history followed by HH:MM, useful for remembering what
@@ -284,12 +299,7 @@ prompt_git() {
 
 # Dir: current working directory
 prompt_dir() {
-    prompt_segment lightblue black ' \w'
-}
-
-prompt_datetime() {
-    datetime=$(date "+%a %m/%d %I:%M:%S%p")
-    prompt_segment green black "$datetime"
+    prompt_segment lightpurple black ' \w'
 }
 
 # Status:
@@ -427,9 +437,9 @@ build_prompt() {
     PR="\n"
     [[ ! -z ${AG_EMACS_DIR+x} ]] && prompt_emacsdir
     prompt_status
+    prompt_git
     prompt_dir
     prompt_newline
-    prompt_git
     #[[ -z ${AG_NO_HIST+x} ]] && prompt_histdt
     [[ -z ${AG_NO_CONTEXT+x} ]] && prompt_context
     prompt_kubecontext
