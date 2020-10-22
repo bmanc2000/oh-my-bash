@@ -263,7 +263,7 @@ prompt_kubecontext() {
 
 prompt_datetime() {
     datetime=$(date "+%a %m/%d %I:%M:%S%p")
-    prompt_segment gray233 default "$datetime"
+    prompt_segment gray240 default "$datetime"
 }
 
 # prints history followed by HH:MM, useful for remembering what
