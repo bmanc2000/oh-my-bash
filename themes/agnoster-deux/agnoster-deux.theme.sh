@@ -114,6 +114,8 @@ fg_color() {
         gray233)        echo 38\;5\;233;;
         gray236)        echo 38\;5\;236;;
         gray240)        echo 38\;5\;240;;
+        blue026)        echo 38\;5\;26;;
+        white011)       echo 38\;5\;11;;
     esac
 }
 
@@ -134,6 +136,8 @@ bg_color() {
         gray233)        echo 48\;5\;233;;
         gray236)        echo 48\;5\;236;;
         gray240)        echo 48\;5\;240;;
+        blue026)        echo 48\;5\;26;;
+        white011)       echo 48\;5\;11;;
     esac;
 }
 
@@ -236,7 +240,7 @@ prompt_virtualenv() {
         # corresponds to the version number.
         VENV_VERSION=$(echo $VERSION_OUTPUT | awk '{print $NF}')
 
-        prompt_segment darkgreen cyan "$(basename $VIRTUAL_ENV):$(basename $VENV_VERSION)"
+        prompt_segment darkgreen white011 "$(basename $VIRTUAL_ENV):$(basename $VENV_VERSION)"
     fi
 }
 
@@ -257,7 +261,8 @@ prompt_kubecontext() {
     local k8s_context=$(kubectl config current-context)
     if [ -n "$k8s_context" ]; then
 #        prompt_segment orange black "k8s:${k8s_context}"
-        prompt_segment gray236 white "k8s:${k8s_context}"
+#        prompt_segment gray236 white "k8s:${k8s_context}"
+        prompt_segment blue026 white "k8s:${k8s_context}"
     fi
 }
 
