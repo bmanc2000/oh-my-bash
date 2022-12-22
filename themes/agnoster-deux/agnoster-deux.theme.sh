@@ -259,10 +259,14 @@ prompt_context() {
 
 prompt_kubecontext() {
     local k8s_context=$(kubectl config current-context)
+    local k8s_ns=$(kubectl config view --minify -o jsonpath='{..namespace}')
+    if [ -z "$k8s_ns" ]; then
+        k8s_ns="default"
+    fi
     if [ -n "$k8s_context" ]; then
 #        prompt_segment orange black "k8s:${k8s_context}"
 #        prompt_segment gray236 white "k8s:${k8s_context}"
-        prompt_segment blue026 white "k8s:${k8s_context}"
+        prompt_segment blue026 white "${k8s_context}:${k8s_ns}"
     fi
 }
 
