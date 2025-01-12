@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#! bash oh-my-bash.module
 
 # prompt themeing
 
@@ -12,8 +12,8 @@ case $TERM in
 	;;
 esac
 
-function prompt_command() {
-	PS1="${TITLEBAR}${orange}${reset_color}${green}\w${bold_blue}\[\$(scm_prompt_info)\]${normal} "
+function _omb_theme_PROMPT_COMMAND() {
+	PS1="${TITLEBAR}${_omb_prompt_red}${_omb_prompt_reset_color}${_omb_prompt_green}\w${_omb_prompt_bold_navy}\[\$(scm_prompt_info)\]${_omb_prompt_normal} "
 }
 
 # scm themeing
@@ -22,4 +22,4 @@ SCM_THEME_PROMPT_CLEAN=" ✓"
 SCM_THEME_PROMPT_PREFIX="("
 SCM_THEME_PROMPT_SUFFIX=")"
 
-safe_append_prompt_command prompt_command
+_omb_util_add_prompt_command _omb_theme_PROMPT_COMMAND

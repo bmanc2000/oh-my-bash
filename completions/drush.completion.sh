@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#! bash oh-my-bash.module
 #
 # bash completion support for Drush:
 #   https://github.com/drush-ops/drush
@@ -7,9 +7,9 @@
 #   http://github.com/drush-ops/drush/blob/master/drush.complete.sh
 
 # Ensure drush is available.
-which drush &> /dev/null || alias drush &> /dev/null || return
+_omb_util_command_exists drush || return
 
-__drush_ps1() {
+function __drush_ps1 {
   f="${TMPDIR:-/tmp/}/drush-env/drush-drupal-site-$$"
   if [ -f $f ]
   then
@@ -23,7 +23,7 @@ __drush_ps1() {
 
 # Completion function, uses the "drush complete" command to retrieve
 # completions for a specific command line COMP_WORDS.
-_drush_completion() {
+function _drush_completion {
   # Set IFS to newline (locally), since we only use newline separators, and
   # need to retain spaces (or not) after completions.
   local IFS=$'\n'

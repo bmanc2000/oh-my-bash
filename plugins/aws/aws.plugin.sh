@@ -1,3 +1,4 @@
+#! bash oh-my-bash.module
 # aws.plugin.sh
 # Author: Michael Anckaert <michael.anckaert@sinax.be>
 # Based on oh-my-zsh AWS plugin
@@ -9,7 +10,7 @@
 export AWS_HOME=~/.aws
 
 function agp {
-  echo $AWS_DEFAULT_PROFILE
+  _omb_util_print $AWS_DEFAULT_PROFILE
 }
 
 function asp {

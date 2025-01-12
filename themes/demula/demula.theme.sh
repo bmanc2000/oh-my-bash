@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#! bash oh-my-bash.module
 
 # Theme inspired on:
 #  - Ronacher's dotfiles (mitsuhikos) - http://github.com/mitsuhiko/dotfiles/tree/master/bash/
@@ -33,17 +33,17 @@
 #*color7: #E5E5E5
 
 # ----------------------------------------------------------------- COLOR CONF
-D_DEFAULT_COLOR="${normal}"
-D_INTERMEDIATE_COLOR="${white}"
-D_USER_COLOR="${purple}"
-D_SUPERUSER_COLOR="${red}"
-D_MACHINE_COLOR="${cyan}"
-D_DIR_COLOR="${green}"
-D_SCM_COLOR="${yellow}"
-D_BRANCH_COLOR="${yellow}"
-D_CHANGES_COLOR="${white}"
-D_CMDFAIL_COLOR="${red}"
-D_VIMSHELL_COLOR="${cyan}"
+D_DEFAULT_COLOR="${_omb_prompt_normal}"
+D_INTERMEDIATE_COLOR="${_omb_prompt_white}"
+D_USER_COLOR="${_omb_prompt_purple}"
+D_SUPERUSER_COLOR="${_omb_prompt_brown}"
+D_MACHINE_COLOR="${_omb_prompt_teal}"
+D_DIR_COLOR="${_omb_prompt_green}"
+D_SCM_COLOR="${_omb_prompt_olive}"
+D_BRANCH_COLOR="${_omb_prompt_olive}"
+D_CHANGES_COLOR="${_omb_prompt_white}"
+D_CMDFAIL_COLOR="${_omb_prompt_brown}"
+D_VIMSHELL_COLOR="${_omb_prompt_teal}"
 
 # ------------------------------------------------------------------ FUNCTIONS
 case $TERM in
@@ -55,25 +55,25 @@ case $TERM in
       ;;
 esac
 
-is_vim_shell() {
+function is_vim_shell {
   if [ ! -z "$VIMRUNTIME" ];
   then
-    echo "${D_INTERMEDIATE_COLOR}on ${D_VIMSHELL_COLOR}\
+    _omb_util_print "${D_INTERMEDIATE_COLOR}on ${D_VIMSHELL_COLOR}\
 vim shell${D_DEFAULT_COLOR} "
   fi
 }
 
-mitsuhikos_lastcommandfailed() {
+function mitsuhikos_lastcommandfailed {
   code=$?
   if [ $code != 0 ];
   then
-    echo "${D_INTERMEDIATE_COLOR}exited ${D_CMDFAIL_COLOR}\
+    _omb_util_print "${D_INTERMEDIATE_COLOR}exited ${D_CMDFAIL_COLOR}\
 $code ${D_DEFAULT_COLOR}"
   fi
 }
 
 # vcprompt for scm instead of oh-my-bash default
-demula_vcprompt() {
+function demula_vcprompt {
   if [ ! -z "$VCPROMPT_EXECUTABLE" ];
   then
     local D_VCPROMPT_FORMAT="on ${D_SCM_COLOR}%s${D_INTERMEDIATE_COLOR}:\
@@ -83,7 +83,7 @@ ${D_BRANCH_COLOR}%b %r ${D_CHANGES_COLOR}%m%u ${D_DEFAULT_COLOR}"
 }
 
 # checks if the plugin is installed before calling battery_charge
-safe_battery_charge() {
+function safe_battery_charge {
   if [ -e "${OSH}/plugins/battery/battery.plugin.sh" ];
   then
     battery_charge
@@ -91,7 +91,7 @@ safe_battery_charge() {
 }
 
 # -------------------------------------------------------------- PROMPT OUTPUT
-prompt() {
+function _omb_theme_PROMPT_COMMAND {
   local LAST_COMMAND_FAILED=$(mitsuhikos_lastcommandfailed)
   local SAVE_CURSOR='\033[s'
   local RESTORE_CURSOR='\033[u'
@@ -126,4 +126,4 @@ ${D_INTERMEDIATE_COLOR}$ ${D_DEFAULT_COLOR}"
 }
 
 # Runs prompt (this bypasses oh-my-bash $PROMPT setting)
-safe_append_prompt_command prompt
+_omb_util_add_prompt_command _omb_theme_PROMPT_COMMAND

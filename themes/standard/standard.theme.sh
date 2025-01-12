@@ -1,3 +1,4 @@
+#! bash oh-my-bash.module
 # scm themeing
 SCM_THEME_PROMPT_DIRTY="×"
 SCM_THEME_PROMPT_CLEAN="✓"
@@ -17,8 +18,8 @@ case $TERM in
 	;;
 esac
 
-function prompt_command() {
-    PROMPT='${green}\u${normal}@${green}\h${normal}:${blue}\w${normal}${red}$(prompt_char)$(git_prompt_info)${normal}\$ '
+function _omb_theme_PROMPT_COMMAND() {
+    PROMPT='${_omb_prompt_green}\u${_omb_prompt_normal}@${_omb_prompt_green}\h${_omb_prompt_normal}:${_omb_prompt_navy}\w${_omb_prompt_normal}${_omb_prompt_brown}$(prompt_char)$(git_prompt_info)${_omb_prompt_normal}\$ '
 }
 
-safe_append_prompt_command prompt_command
+_omb_util_add_prompt_command _omb_theme_PROMPT_COMMAND

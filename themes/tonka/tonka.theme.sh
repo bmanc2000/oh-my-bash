@@ -1,23 +1,23 @@
-#!/usr/bin/env bash
+#! bash oh-my-bash.module
 
-__tonka_time() {
+function __tonka_time {
   THEME_CLOCK_FORMAT="%H%M"
   clock_prompt
 }
 
-__tonka_date() {
+function __tonka_date {
   THEME_CLOCK_FORMAT="%a,%d %b %y"
   clock_prompt
 }
 
-__tonka_clock() {
+function __tonka_clock {
   local LIGHT_BLUE="\[\033[1;34m\]"
   if [[ "${THEME_SHOW_CLOCK}" = "true" ]]; then
-    echo "$(__tonka_time)${LIGHT_BLUE}:$(__tonka_date)${LIGHT_BLUE}:"
+    _omb_util_print "$(__tonka_time)${LIGHT_BLUE}:$(__tonka_date)${LIGHT_BLUE}:"
   fi
 }
 
-prompt_setter() {
+function _omb_theme_PROMPT_COMMAND {
 
 #   Named "Tonka" because of the colour scheme
 local WHITE="\[\033[1;37m\]"
@@ -49,7 +49,7 @@ PS2="$LIGHT_BLUE-$YELLOW-$YELLOW-$NO_COLOUR "
 
 }
 
-safe_append_prompt_command prompt_setter
+_omb_util_add_prompt_command _omb_theme_PROMPT_COMMAND
 
 THEME_SHOW_CLOCK=${THEME_SHOW_CLOCK:-"true"}
 THEME_CLOCK_COLOR=${THEME_CLOCK_COLOR:-"\[\033[1;33m\]"}

@@ -1,9 +1,9 @@
-#!/usr/bin/env bash
+#! bash oh-my-bash.module
 
-# Set NVM_DIR if it isn't already defined
-[[ -z "$SDKMAN_DIR" ]] && export NVM_DIR="$HOME/.sdkman"
+# Set SDKMAN_DIR if it isn't already defined
+[[ ${SDKMAN_DIR-} ]] || export SDKMAN_DIR=~/.sdkman
 
-# Try to load sdk only if command not already available
-if ! type "sdk" &> /dev/null; then
-  [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+# Try to load sdk only if the command is not available
+if ! _omb_util_command_exists sdk && [[ -s $SDKMAN_DIR/bin/sdkman-init.sh ]]; then
+  source "$SDKMAN_DIR/bin/sdkman-init.sh"
 fi

@@ -1,4 +1,4 @@
-#!/bin/bash
+#! bash oh-my-bash.module
 
 # Two line prompt showing the following information:
 # (time) SCM [username@hostname] pwd (SCM branch SCM status)
@@ -21,36 +21,36 @@ function randomize_nwinkler {
   declare -a AVAILABLE_COLORS
 
   AVAILABLE_COLORS=(
-    $black
-    $red
-    $green
-    $yellow
-    $blue
-    $purple
-    $cyan
-    $white
-    $orange
-    $bold_black
-    $bold_red
-    $bold_green
-    $bold_yellow
-    $bold_blue
-    $bold_purple
-    $bold_cyan
-    $bold_white
-    $bold_orange
+    "$_omb_prompt_black"
+    "$_omb_prompt_brown"
+    "$_omb_prompt_green"
+    "$_omb_prompt_olive"
+    "$_omb_prompt_navy"
+    "$_omb_prompt_purple"
+    "$_omb_prompt_teal"
+    "$_omb_prompt_white"
+    "$_omb_prompt_red"
+    "$_omb_prompt_bold_black"
+    "$_omb_prompt_bold_brown"
+    "$_omb_prompt_bold_green"
+    "$_omb_prompt_bold_olive"
+    "$_omb_prompt_bold_navy"
+    "$_omb_prompt_bold_purple"
+    "$_omb_prompt_bold_teal"
+    "$_omb_prompt_bold_white"
+    "$_omb_prompt_bold_red"
+
+    # # Uncomment these to allow underlines:
+    # "$_omb_prompt_underline_black"
+    # "$_omb_prompt_underline_brown"
+    # "$_omb_prompt_underline_green"
+    # "$_omb_prompt_underline_olive"
+    # "$_omb_prompt_underline_navy"
+    # "$_omb_prompt_underline_purple"
+    # "$_omb_prompt_underline_teal"
+    # "$_omb_prompt_underline_white"
+    # "$_omb_prompt_underline_red"
   )
-  # Uncomment these to allow underlines:
-    #$underline_black
-    #$underline_red
-    #$underline_green
-    #$underline_yellow
-    #$underline_blue
-    #$underline_purple
-    #$underline_cyan
-    #$underline_white
-    #$underline_orange
-  #)
 
   USERNAME_COLOR=${AVAILABLE_COLORS[$RANDOM % ${#AVAILABLE_COLORS[@]} ]}
   HOSTNAME_COLOR=${AVAILABLE_COLORS[$RANDOM % ${#AVAILABLE_COLORS[@]} ]}
@@ -58,7 +58,7 @@ function randomize_nwinkler {
   THEME_CLOCK_COLOR=$TIME_COLOR
   PATH_COLOR=${AVAILABLE_COLORS[$RANDOM % ${#AVAILABLE_COLORS[@]} ]}
 
-  echo "$USERNAME_COLOR,$HOSTNAME_COLOR,$TIME_COLOR,$PATH_COLOR," > $RANDOM_COLOR_FILE
+  _omb_util_print "$USERNAME_COLOR,$HOSTNAME_COLOR,$TIME_COLOR,$PATH_COLOR," > $RANDOM_COLOR_FILE
 }
 
 if [ -f $RANDOM_COLOR_FILE ];
@@ -74,23 +74,23 @@ else
   # No colors stored yet. Generate them!
   randomize_nwinkler
 
-  echo
-  echo "Looks like you are using the nwinkler_random_color bashit theme for the first time."
-  echo "Random colors have been generated to be used in your prompt."
-  echo "If you don't like them, run the command:"
-  echo "  randomize_nwinkler"
-  echo "until you get a combination that you like."
-  echo
+  _omb_util_print
+  _omb_util_print "Looks like you are using the nwinkler_random_color bashit theme for the first time."
+  _omb_util_print "Random colors have been generated to be used in your prompt."
+  _omb_util_print "If you don't like them, run the command:"
+  _omb_util_print "  randomize_nwinkler"
+  _omb_util_print "until you get a combination that you like."
+  _omb_util_print
 fi
 
-PROMPT_END_CLEAN="${green}→${reset_color}"
-PROMPT_END_DIRTY="${red}→${reset_color}"
+PROMPT_END_CLEAN="${_omb_prompt_green}→${_omb_prompt_reset_color}"
+PROMPT_END_DIRTY="${_omb_prompt_brown}→${_omb_prompt_reset_color}"
 
 function prompt_end() {
   echo -e "$PROMPT_END"
 }
 
-prompt_setter() {
+function _omb_theme_PROMPT_COMMAND {
   local exit_status=$?
   if [[ $exit_status -eq 0 ]]; then PROMPT_END=$PROMPT_END_CLEAN
     else PROMPT_END=$PROMPT_END_DIRTY
@@ -99,15 +99,15 @@ prompt_setter() {
   history -a
   history -c
   history -r
-  PS1="($(clock_prompt)${reset_color}) $(scm_char) [${USERNAME_COLOR}\u${reset_color}@${HOSTNAME_COLOR}\H${reset_color}] ${PATH_COLOR}\w${reset_color}$(scm_prompt_info) ${reset_color}\n$(prompt_end) "
+  PS1="($(clock_prompt)${_omb_prompt_reset_color}) $(scm_char) [${USERNAME_COLOR}\u${_omb_prompt_reset_color}@${HOSTNAME_COLOR}\H${_omb_prompt_reset_color}] ${PATH_COLOR}\w${_omb_prompt_reset_color}$(scm_prompt_info) ${_omb_prompt_reset_color}\n$(prompt_end) "
   PS2='> '
   PS4='+ '
 }
 
-safe_append_prompt_command prompt_setter
+_omb_util_add_prompt_command _omb_theme_PROMPT_COMMAND
 
-SCM_THEME_PROMPT_DIRTY=" ${bold_red}✗${normal}"
-SCM_THEME_PROMPT_CLEAN=" ${bold_green}✓${normal}"
+SCM_THEME_PROMPT_DIRTY=" ${_omb_prompt_bold_brown}✗${_omb_prompt_normal}"
+SCM_THEME_PROMPT_CLEAN=" ${_omb_prompt_bold_green}✓${_omb_prompt_normal}"
 SCM_THEME_PROMPT_PREFIX=" ("
 SCM_THEME_PROMPT_SUFFIX=")"
 RVM_THEME_PROMPT_PREFIX=" ("

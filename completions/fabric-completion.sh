@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#! bash oh-my-bash.module
 #
 # Bash completion support for Fabric (http://fabfile.org/)
 #
@@ -80,7 +80,7 @@ function __fab_fabfile_mtime() {
 #
 function __fab_completion() {
     # Return if "fab" command doesn't exists
-    [[ -e `which fab 2> /dev/null` ]] || return 0
+    _omb_util_binary_exists fab || return 0
 
     # Variables to hold the current word and possible matches
     local cur="${COMP_WORDS[COMP_CWORD]}"
@@ -91,7 +91,7 @@ function __fab_completion() {
         -*)
             if [[ -z "${__FAB_COMPLETION_LONG_OPT}" ]]; then
                 export __FAB_COMPLETION_LONG_OPT=$(
-                    fab --help | egrep -o "\-\-[A-Za-z_\-]+\=?" | sort -u)
+                    fab --help | command grep -Eo "\-\-[A-Za-z_\-]+\=?" | sort -u)
             fi
             opts="${__FAB_COMPLETION_LONG_OPT}"
             ;;
@@ -101,7 +101,7 @@ function __fab_completion() {
         # -*)
         #     if [[ -z "${__FAB_COMPLETION_SHORT_OPT}" ]]; then
         #         export __FAB_COMPLETION_SHORT_OPT=$(
-        #             fab --help | egrep -o "^ +\-[A-Za-z_\]" | sort -u)
+        #             fab --help | command grep -Eo "^ +\-[A-Za-z_\]" | sort -u)
         #     fi
         #     opts="${__FAB_COMPLETION_SHORT_OPT}"
         #     ;;

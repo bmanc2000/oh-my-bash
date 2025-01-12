@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#! bash oh-my-bash.module
 # This command is used a LOT both below and in daily life
 alias k=kubectl
 
@@ -76,7 +76,7 @@ alias kdd='kubectl describe deployment'
 alias kdeld='kubectl delete deployment'
 alias ksd='kubectl scale deployment'
 alias krsd='kubectl rollout status deployment'
-kres(){
+function kres {
     kubectl set env $@ REFRESHED_AT=$(date +%Y%m%d%H%M%S)
 }
 

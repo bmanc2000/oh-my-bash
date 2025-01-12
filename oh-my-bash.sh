@@ -1,163 +1,188 @@
 #!/usr/bin/env bash
 
 # Bail out early if non-interactive
+#
+# Note: We cannot produce any error messages here because, in some systems,
+# /etc/gdm3/Xsession sources ~/.profile and checks stderr.  If there is any
+# stderr ourputs, it refuses to start the session.
 case $- in
   *i*) ;;
     *) return;;
 esac
 
+if [ -z "${BASH_VERSION-}" ]; then
+  printf '%s\n' 'oh-my-bash: This is not a Bash. Use OMB with Bash 3.2 or higher.' >&2
+  return 1
+fi
+_omb_bash_version=$((BASH_VERSINFO[0] * 10000 + BASH_VERSINFO[1] * 100 + BASH_VERSINFO[2]))
+if ((_omb_bash_version < 30200)); then
+  printf '%s\n' "oh-my-bash: OMB does not support this version of Bash ($BASH_VERSION)" >&2
+  printf '%s\n' "oh-my-bash: Use OMB with Bash 3.2 or higher" >&2
+  return 1
+fi
+
+OMB_VERSINFO=(1 0 0 0 master noarch)
+OMB_VERSION="${OMB_VERSINFO[0]}.${OMB_VERSINFO[1]}.${OMB_VERSINFO[2]}(${OMB_VERSINFO[3]})-${OMB_VERSINFO[4]} (${OMB_VERSINFO[5]})"
+_omb_version=$((OMB_VERSINFO[0] * 10000 + OMB_VERSINFO[1] * 100 + OMB_VERSINFO[2]))
+
 # Check for updates on initial load...
-if [ "$DISABLE_AUTO_UPDATE" != "true" ]; then
-  env OSH=$OSH DISABLE_UPDATE_PROMPT=$DISABLE_UPDATE_PROMPT bash -f $OSH/tools/check_for_upgrade.sh
+if [[ $DISABLE_AUTO_UPDATE != true ]]; then
+  source "$OSH"/tools/check_for_upgrade.sh
 fi
 
 # Initializes Oh My Bash
 
-# add a function path
-fpath=($OSH/functions $fpath)
-
 # Set OSH_CUSTOM to the path where your custom config files
 # and plugins exists, or else we will use the default custom/
-if [[ -z "$OSH_CUSTOM" ]]; then
-    OSH_CUSTOM="$OSH/custom"
+if [[ ! ${OSH_CUSTOM-} ]]; then
+  OSH_CUSTOM=$OSH/custom
+  [[ -d $OSH_CUSTOM && -O $OSH_CUSTOM ]] ||
+    OSH_CUSTOM=${XDG_DATA_HOME:-$HOME/.local/share}/oh-my-bash/custom
 fi
 
 # Set OSH_CACHE_DIR to the path where cache files should be created
 # or else we will use the default cache/
-if [[ -z "$OSH_CACHE_DIR" ]]; then
-  OSH_CACHE_DIR="$OSH/cache"
+if [[ ! ${OSH_CACHE_DIR-} ]]; then
+  OSH_CACHE_DIR=$OSH/cache
+  [[ -d $OSH_CACHE_DIR && -O $OSH_CACHE_DIR ]] ||
+    OSH_CACHE_DIR=${XDG_STATE_HOME:-$HOME/.local/state}/oh-my-bash/cache
 fi
+
+_omb_module_loaded=
+function _omb_module_require {
+  local status=0
+  local -a files=() modules=()
+  while (($#)); do
+    local type=lib name=$1; shift
+    [[ $name == *:* ]] && type=${name%%:*} name=${name#*:}
+    name=${name%.bash}
+    name=${name%.sh}
+
+    local module=$type:$name
+    [[ ' '$_omb_module_loaded' ' == *" $module "* ]] && continue
+
+    local -a locations=()
+    case $type in
+    lib)        locations=({"$OSH_CUSTOM","$OSH"}/lib/"$name".{bash,sh}) ;;
+    plugin)     locations=({"$OSH_CUSTOM","$OSH"}/plugins/"$name"/"$name".plugin.{bash,sh}) ;;
+    alias)      locations=({"$OSH_CUSTOM","$OSH"}/aliases/"$name".aliases.{bash,sh}) ;;
+    completion) locations=({"$OSH_CUSTOM","$OSH"}/completions/"$name".completion.{bash,sh}) ;;
+    theme)      locations=({"$OSH_CUSTOM"{,/themes},"$OSH"/themes}/"$name"/"$name".theme.{bash,sh}) ;;
+    *)
+      printf '%s\n' "oh-my-bash (module_require): unknown module type '$type'." >&2
+      status=2
+      continue ;;
+    esac
+
+    local path
+    for path in "${locations[@]}"; do
+      if [[ -f $path ]]; then
+        files+=("$path")
+        modules+=("$module")
+        continue 2
+      fi
+    done
+
+    printf '%s\n' "oh-my-bash (module_require): module '$type:$name' not found." >&2
+    status=127
+  done
+
+  if ((status == 0)); then
+    local i
+    for i in "${!files[@]}"; do
+      local path=${files[i]} module=${modules[i]}
+      [[ ' '$_omb_module_loaded' ' == *" $module "* ]] && continue
+      _omb_module_loaded="$_omb_module_loaded $module"
+      source "$path" || status=$?
+    done
+  fi
+
+  return "$status"
+}
+
+function _omb_module_require_lib        { _omb_module_require "${@/#/lib:}"; }
+function _omb_module_require_plugin     { _omb_module_require "${@/#/plugin:}"; }
+function _omb_module_require_alias      { _omb_module_require "${@/#/alias:}"; }
+function _omb_module_require_completion { _omb_module_require "${@/#/completion:}"; }
+function _omb_module_require_theme      { _omb_module_require "${@/#/theme:}"; }
 
 # Load all of the config files in ~/.oh-my-bash/lib that end in .sh
 # TIP: Add files you don't want in git to .gitignore
-for config_file in $OSH/lib/*.sh; do
-  custom_config_file="${OSH_CUSTOM}/lib/${config_file:t}"
-  [ -f "${custom_config_file}" ] && config_file=${custom_config_file}
-  source $config_file
-done
-
-
-is_plugin() {
-  local base_dir=$1
-  local name=$2
-  test -f $base_dir/plugins/$name/$name.plugin.sh \
-    || test -f $base_dir/plugins/$name/_$name
-}
-# Add all defined plugins to fpath. This must be done
-# before running compinit.
-for plugin in ${plugins[@]}; do
-  if is_plugin $OSH_CUSTOM $plugin; then
-    fpath=($OSH_CUSTOM/plugins/$plugin $fpath)
-  elif is_plugin $OSH $plugin; then
-    fpath=($OSH/plugins/$plugin $fpath)
-  fi
-done
-
-is_completion() {
-  local base_dir=$1
-  local name=$2
-  test -f $base_dir/completions/$name/$name.completion.sh
-}
-# Add all defined completions to fpath. This must be done
-# before running compinit.
-for completion in ${completions[@]}; do
-  if is_completion $OSH_CUSTOM $completion; then
-    fpath=($OSH_CUSTOM/completions/$completion $fpath)
-  elif is_completion $OSH $completion; then
-    fpath=($OSH/completions/$completion $fpath)
-  fi
-done
-
-is_alias() {
-  local base_dir=$1
-  local name=$2
-  test -f $base_dir/aliases/$name/$name.aliases.sh
-}
-# Add all defined completions to fpath. This must be done
-# before running compinit.
-for alias in ${aliases[@]}; do
-  if is_alias $OSH_CUSTOM $alias; then
-    fpath=($OSH_CUSTOM/aliases/$alias $fpath)
-  elif is_alias $OSH $alias; then
-    fpath=($OSH/aliases/$alias $fpath)
-  fi
-done
+_omb_module_require_lib omb-util
+_omb_module_require_lib utils
+_omb_util_glob_expand _omb_init_files '{"$OSH","$OSH_CUSTOM"}/lib/*.{bash,sh}'
+_omb_init_files=("${_omb_init_files[@]##*/}")
+_omb_init_files=("${_omb_init_files[@]%.bash}")
+_omb_init_files=("${_omb_init_files[@]%.sh}")
+_omb_module_require_lib "${_omb_init_files[@]}"
+unset -v _omb_init_files
 
 # Figure out the SHORT hostname
-if [[ "$OSTYPE" = darwin* ]]; then
+if [[ $OSTYPE = darwin* ]]; then
   # macOS's $HOST changes with dhcp, etc. Use ComputerName if possible.
-  SHORT_HOST=$(scutil --get ComputerName 2>/dev/null) || SHORT_HOST=${HOST/.*/}
+  SHORT_HOST=$(scutil --get ComputerName 2>/dev/null) || SHORT_HOST=${HOST/.*}
 else
-  SHORT_HOST=${HOST/.*/}
+  SHORT_HOST=${HOST/.*}
 fi
 
 # Load all of the plugins that were defined in ~/.bashrc
-for plugin in ${plugins[@]}; do
-  if [ -f $OSH_CUSTOM/plugins/$plugin/$plugin.plugin.sh ]; then
-    source $OSH_CUSTOM/plugins/$plugin/$plugin.plugin.sh
-  elif [ -f $OSH/plugins/$plugin/$plugin.plugin.sh ]; then
-    source $OSH/plugins/$plugin/$plugin.plugin.sh
-  fi
-done
+_omb_module_require_plugin "${plugins[@]}"
 
 # Load all of the aliases that were defined in ~/.bashrc
-for alias in ${aliases[@]}; do
-  if [ -f $OSH_CUSTOM/aliases/$alias.aliases.sh ]; then
-    source $OSH_CUSTOM/aliases/$alias.aliases.sh
-  elif [ -f $OSH/aliases/$alias.aliases.sh ]; then
-    source $OSH/aliases/$alias.aliases.sh
-  fi
-done
+_omb_module_require_alias "${aliases[@]}"
 
 # Load all of the completions that were defined in ~/.bashrc
-for completion in ${completions[@]}; do
-  if [ -f $OSH_CUSTOM/completions/$completion.completion.sh ]; then
-    source $OSH_CUSTOM/completions/$completion.completion.sh
-  elif [ -f $OSH/completions/$completion.completion.sh ]; then
-    source $OSH/completions/$completion.completion.sh
-  fi
-done
+_omb_module_require_completion "${completions[@]}"
 
 # Load all of your custom configurations from custom/
-for config_file in $OSH_CUSTOM/*.sh; do
-  if [ -f $config_file ]; then
-    source $config_file
-  fi
+_omb_util_glob_expand _omb_init_files '"$OSH_CUSTOM"/*.{sh,bash}'
+for _omb_init_file in "${_omb_init_files[@]}"; do
+  [[ -f $_omb_init_file ]] &&
+    source "$_omb_init_file"
 done
-unset config_file
-
-# Load colors first so they can be use in base theme
-source "${OSH}/themes/colours.theme.sh"
-source "${OSH}/themes/base.theme.sh"
+unset -v _omb_init_files _omb_init_file
 
 # Load the theme
-if [ "$OSH_THEME" = "random" ]; then
-  themes=($OSH/themes/*/*theme.sh)
-  N=${#themes[@]}
-  ((N=(RANDOM%N)))
-  RANDOM_THEME=${themes[$N]}
-  source "$RANDOM_THEME"
-  echo "[oh-my-bash] Random theme '$RANDOM_THEME' loaded..."
-else
-  if [ ! "$OSH_THEME" = ""  ]; then
-    if [ -f "$OSH_CUSTOM/$OSH_THEME/$OSH_THEME.theme.sh" ]; then
-      source "$OSH_CUSTOM/$OSH_THEME/$OSH_THEME.theme.sh"
-    elif [ -f "$OSH_CUSTOM/themes/$OSH_THEME/$OSH_THEME.theme.sh" ]; then
-      source "$OSH_CUSTOM/themes/$OSH_THEME/$OSH_THEME.theme.sh"
-    else
-      source "$OSH/themes/$OSH_THEME/$OSH_THEME.theme.sh"
-    fi
+if [[ $OSH_THEME == random ]]; then
+  _omb_util_glob_expand _omb_init_files '"$OSH"/themes/*/*.theme.sh'
+
+  # Remove ignored themes from the list
+  for _omb_init_theme in random "${OMB_THEME_RANDOM_IGNORED[@]}"; do
+    for _omb_init_index in "${!_omb_init_files[@]}"; do
+      [[ ${_omb_init_files[_omb_init_index]} == */"$_omb_init_theme"/* ]] &&
+        unset -v '_omb_init_files[_omb_init_index]'
+    done
+    unset -v _omb_init_index
+  done
+  unset -v _omb_init_theme
+  _omb_init_files=("${_omb_init_files[@]}")
+
+  if ((${#_omb_init_files[@]})); then
+    _omb_init_file=${_omb_init_files[RANDOM%${#_omb_init_files[@]}]}
+    source "$_omb_init_file"
+    OMB_THEME_RANDOM_SELECTED=${_omb_init_file##*/}
+    OMB_THEME_RANDOM_SELECTED=${OMB_THEME_RANDOM_SELECTED%.theme.bash}
+    OMB_THEME_RANDOM_SELECTED=${OMB_THEME_RANDOM_SELECTED%.theme.sh}
+    printf '%s\n' "[oh-my-bash] Random theme '$OMB_THEME_RANDOM_SELECTED' ($_omb_init_file) loaded..."
   fi
+  unset -v _omb_init_files _omb_init_file
+elif [[ $OSH_THEME ]]; then
+  _omb_module_require_theme "$OSH_THEME"
 fi
 
 if [[ $PROMPT ]]; then
-    export PS1="\["$PROMPT"\]"
+  export PS1='\['$PROMPT'\]'
 fi
 
-if ! type_exists '__git_ps1' ; then
+if ! _omb_util_command_exists '__git_ps1'; then
   source "$OSH/tools/git-prompt.sh"
 fi
 
 # Adding Support for other OSes
-[ -s /usr/bin/gloobus-preview ] && PREVIEW="gloobus-preview" ||
-[ -s /Applications/Preview.app ] && PREVIEW="/Applications/Preview.app" || PREVIEW="less"
+if [[ -s /usr/bin/gloobus-preview ]]; then
+  PREVIEW="gloobus-preview"
+elif [[ -s /Applications/Preview.app ]]; then
+  PREVIEW="/Applications/Preview.app"
+else
+  PREVIEW="less"
+fi

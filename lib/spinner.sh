@@ -1,18 +1,18 @@
-#!/usr/bin/env bash
+#! bash oh-my-bash.module
 #
 # Move a process to background and track its progress in a smoothier way.
 # Could be use if $TERM not set.
 #
 # Examples
 #
-# echo -ne "${fg[red]}I am running..."
+# echo -ne "${_omb_term_brown}I am running..."
 # ( my_long_task_running ) &
 # spinner
-# echo -ne "...${reset_color} ${fg[green]}DONE${reset_color}"
+# echo -ne "...${_omb_term_reset} ${_omb_term_green}DONE${_omb_term_reset}"
 #
 
 # This spinner is used when there is a terminal.
-term_spinner() {
+function term_spinner {
   local pid=$!
   local delay=0.1
   local spinstr='|/-\'
@@ -26,7 +26,7 @@ term_spinner() {
   printf "    \b\b\b\b"
 }
 
-no_term_spinner() {
+function no_term_spinner {
   local pid=$!
   local delay=0.1
   local spinstr='|/-\'
@@ -37,7 +37,7 @@ no_term_spinner() {
   echo " ✓ "
 }
 
-spinner() {
+function spinner {
   if [[ -z "$TERM" ]]; then
     no_term_spinner
   else

@@ -1,8 +1,8 @@
-#!/usr/bin/env bash
+#! bash oh-my-bash.module
 
 # minikube (Kubernetes CLI) completion
 
-if command -v minikube &>/dev/null
+if _omb_util_command_exists minikube
 then
   eval "$(minikube completion bash)"
 fi

@@ -34,6 +34,17 @@ bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/mast
 bash -c "$(wget https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh -O -)"
 ```
 
+This replaces `~/.bashrc` with the version provided by Oh My Bash. The original `.bashrc` is backed up with the name `~/.bashrc.omb-TIMESTAMP`.
+If `~/.bash_profile` does not exist, this also creates a new file `~/.bash_profile` with the default contents.
+
+⚠️ If `~/.bash_profile` already existed before Oh My Bash is installed, please make sure that`~/.bash_profile` contains the line `source ~/.bashrc` or `. ~/.bashrc`.
+If not, please add the following three lines in `~/.bash_profile`:
+```bash
+if [[ -f ~/.bashrc ]]; then
+  source ~/.bashrc
+fi
+```
+
 ## Using Oh My Bash
 
 ### Plugins
@@ -50,6 +61,16 @@ For example, this line might begin to look like this:
 plugins=(git bundler osx rake ruby)
 ```
 
+##### With Conditionals
+
+You may want to control when and/or how plugins should be enabled.
+
+For example, if you want the `tmux-autoattach` plugin to only run on SSH sessions, you could employ a trivial conditional that checks for the `$SSH_TTY` variable. Just make sure to remove the plugin from the larger plugin list.
+
+``` bash
+[ "$SSH_TTY" ] && plugins+=(tmux-autoattach)
+```
+
 #### Using Plugins
 
 Most plugins (should! we're working on this) include a __README__, which documents how to use them.
@@ -60,12 +81,12 @@ We'll admit it. Early in the Oh My Bash world, we may have gotten a bit too them
 
 #### Selecting a Theme
 
-_Powerline's theme is the default one. It's not the fanciest one. It's not the simplest one. It's just the right one (for me)._
+_The font theme is the default one. It's not the fanciest one. It's not the simplest one. It's just the right one for the original maintainer of Oh My Bash._
 
 Once you find a theme that you want to use, you will need to edit the `~/.bashrc` file. You'll see an environment variable (all caps) in there that looks like:
 
 ```shell
-OSH_THEME="powerline"
+OSH_THEME="font"
 ```
 
 To use a different theme, simply change the value to match the name of your desired theme. For example:
@@ -78,15 +99,27 @@ OSH_THEME="agnoster" # (this is one of the fancy ones)
 
 Open up a new terminal window and your prompt should look something like this:
 
-![Agnoster theme](img/example_powerline.png)
+![Font theme](themes/font/font-dark.png)
 
-In case you did not find a suitable theme for your needs, please have a look at the wiki for [more of them](https://github.com/ohmybash/oh-my-bash/wiki/External-themes).
+In case you did not find a suitable theme for your needs, please have a look
+at the wiki for [more of them](https://github.com/ohmybash/oh-my-bash/wiki/Themes).
 
 If you're feeling feisty, you can let the computer select one randomly for you each time you open a new terminal window.
 
-
 ```shell
 OSH_THEME="random" # (...please let it be pie... please be some pie..)
+```
+
+If there are themes you don't like, you can add them to an ignored list:
+
+```shell
+OMB_THEME_RANDOM_IGNORED=("powerbash10k" "wanelo")
+```
+
+The selected theme name can be checked by the following command:
+
+```shell
+$ echo "$OMB_THEME_RANDOM_SELECTED"
 ```
 
 ## Advanced Topics
@@ -104,7 +137,33 @@ The default location is `~/.oh-my-bash` (hidden in your home directory)
 If you'd like to change the install directory with the `OSH` environment variable, either by running `export OSH=/your/path` before installing, or by setting it before the end of the install pipeline like this:
 
 ```shell
-export OSH="$HOME/.dotfiles/oh-my-bash"; sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
+export OSH="$HOME/.dotfiles/oh-my-bash"; bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
+```
+
+#### Unattended install
+
+If you're running the Oh My Bash install script as part of an automated install, you can pass the
+flag `--unattended` to the `install.sh` script. This will have the effect of not trying to change
+the default shell, and also won't run `bash` when the installation has finished.
+
+```sh
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)" --unattended
+```
+
+#### System-wide installation
+
+For example, Oh My Bash can be installed to `/usr/local/share/oh-my-bash` for the system-wide installation by specifying the option `--prefix=PREFIX`.
+
+```sh
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)" --prefix=/usr/local
+```
+
+To enable Oh My Bash, the Bash startup file `.bashrc` needs to be manually set up by each user.
+The template of `.bashrc` is available in `PREFIX/share/oh-my-bash/bashrc`.
+The users can copy the template file to `~/.bashrc` and edit it.
+
+```bash
+cp /usr/local/share/oh-my-bash/bashrc ~/.bashrc
 ```
 
 #### Manual Installation
@@ -112,7 +171,7 @@ export OSH="$HOME/.dotfiles/oh-my-bash"; sh -c "$(curl -fsSL https://raw.githubu
 ##### 1. Clone the repository:
 
 ```shell
-git clone git://github.com/ohmybash/oh-my-bash.git ~/.oh-my-bash
+git clone https://github.com/ohmybash/oh-my-bash.git ~/.oh-my-bash
 ```
 
 ##### 2. *Optionally*, backup your existing `~/.bashrc` file:
@@ -146,13 +205,49 @@ If you have any hiccups installing, here are a few common fixes.
 * You _might_ need to modify your `PATH` in `~/.bashrc` if you're not able to find some commands after switching to `oh-my-bash`.
 * If you installed manually or changed the install location, check the `OSH` environment variable in `~/.bashrc`.
 
-### Custom Plugins and Themes
+### Customization of  Plugins and Themes
 
 If you want to override any of the default behaviors, just add a new file (ending in `.sh`) in the `custom/` directory.
 
 If you have many functions that go well together, you can put them as a `XYZ.plugin.sh` file in the `custom/plugins/` directory and then enable this plugin.
 
-If you would like to override the functionality of a plugin distributed with Oh My Bash, create a plugin of the same name in the `custom/plugins/` directory and it will be loaded instead of the one in `plugins/`.
+If you would like to modify an existing module (theme/plugin/aliases/completion) bundled with Oh My Bash, first copy the original module to `custom/` directory and modify it.  It will be loaded instead of the original one.
+
+```bash
+$ mkdir -p "$OSH_CUSTOM/themes"
+$ cp -r {"$OSH","$OSH_CUSTOM"}/themes/agnoster
+$ EDIT "$OSH_CUSTOM/themes/agnoster/agnoster.theme.sh"
+```
+
+If you would like to track the upstream changes for your customized version of modules, you can optionally directly edit the original files and commit them.  In this case, you need to handle possible conflicts with the upstream in upgrading.
+
+If you would like to replace an existing module (theme/plugin/aliases/complet) bundled with Oh My Bash, create a module of the same name in the `custom/` directory so that it will be loaded instead of the original one.
+
+### Configuration
+
+#### Enable/disable python venv
+
+The python virtualenv/condaenv information in the prompt may be enabled by the following line in `~/.bashrc`.
+
+```bash
+OMB_PROMPT_SHOW_PYTHON_VENV=true
+```
+
+Some themes turn on it by default.  If you would like to turn it off, you may disable it by the following line in `~/.bashrc`:
+
+```bash
+OMB_PROMPT_SHOW_PYTHON_VENV=false
+```
+
+#### Disable internal uses of `sudo`
+
+Some plugins of oh-my-bash internally use `sudo` when it is necessary.  However, this might clutter with the `sudo` log.  To disable the use of `sudo` by oh-my-bash, `OMB_USE_SUDO` can be set to `false` in `~/.bashrc`.
+
+```bash
+OMB_USE_SUDO=false
+```
+
+Each plugin might provides finer configuration variables to control the use of `sudo` by each plugin.
 
 ## Getting Updates
 
@@ -186,9 +281,19 @@ If you want to uninstall `oh-my-bash`, just run `uninstall_oh_my_bash` from the 
 
 ## Contributing
 
-I'm far from being a [Bash](https://www.gnu.org/software/bash/) expert and suspect there are many ways to improve – if you have ideas on how to make the configuration easier to maintain (and faster), don't hesitate to fork and send pull requests!
+Check out [`CONTRIBUTING.md`](CONTRIBUTING.md) and also [Code of
+Conduct](CODE_OF_CONDUCT.md).
 
-We also need people to test out pull-requests. So take a look through [the open issues](https://github.com/ohmybash/oh-my-bash/issues) and help where you can.
+This project is initially ported from Oh My Zsh and Bash-it by `@nntoan` and
+has been developed in a community-driven way.  Most of the contributors are far
+from being [Bash](https://www.gnu.org/software/bash/) experts, and there are
+many ways to improve the codebase.  We are looking for more people with
+expertise in Bash scripting.  If you have ideas on how to make the
+configuration easier to maintain (and faster), don't hesitate to fork and send
+pull requests!
+
+We also need people to test out pull-requests.  Take a look through [the open
+issues](https://github.com/ohmybash/oh-my-bash/issues) and help where you can.
 
 ## Contributors
 
@@ -198,4 +303,6 @@ Thank you so much!
 
 ## License
 
+See [`LICENSE.md`](License.md).
+Oh My Bash is derived from [Oh My Zsh](https://github.com/ohmyzsh/ohmyzsh).
 Oh My Bash is released under the [MIT license](LICENSE.md).

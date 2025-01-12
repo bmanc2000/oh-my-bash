@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#! bash oh-my-bash.module
 
 # Set term to 256color mode, if 256color is not supported, colors won't work properly
 if [[ $COLORTERM = gnome-* && $TERM = xterm ]] && infocmp gnome-256color >/dev/null 2>&1; then
@@ -11,7 +11,7 @@ fi
 function show_reboot_required() {
   if [ ! -z "$_bf_prompt_reboot_info" ]; then
     if [ -f /var/run/reboot-required ]; then
-      printf "Reboot required!"
+      _omb_util_put "Reboot required!"
     fi
   fi
 }
@@ -20,9 +20,9 @@ function show_reboot_required() {
 function set_host_color() {
   # Detect if connection is through SSH
   if [[ ! -z $SSH_CLIENT ]]; then
-    printf "${lime_yellow}"
+    _omb_util_put "${lime_yellow}"
   else
-    printf "${light_orange}"
+    _omb_util_put "${light_orange}"
   fi
 }
 
@@ -30,21 +30,21 @@ function set_host_color() {
 function set_user_color() {
   case $(id -u) in
     0)
-      printf "${red}"
+      _omb_util_put "${_omb_prompt_brown}"
       ;;
     *)
-      printf "${cyan}"
+      _omb_util_put "${_omb_prompt_teal}"
       ;;
   esac
 }
 
-scm_prompt() {
+function scm_prompt {
   CHAR=$(scm_char)
   if [ $CHAR = $SCM_NONE_CHAR ]
     then
       return
     else
-      echo "[$(scm_char)$(scm_prompt_info)]"
+      _omb_util_print "[$(scm_char)$(scm_prompt_info)]"
   fi
 }
 
@@ -62,22 +62,22 @@ function set_custom_colors() {
   powder_blue="\[$(tput setaf 153)\]"
 }
 
-__ps_time() {
-  echo "$(clock_prompt)${normal}\n"
+function __ps_time {
+  _omb_util_print "$(clock_prompt)${_omb_prompt_normal}\n"
 }
 
-function prompt_command() {
-  ps_reboot="${bright_yellow}$(show_reboot_required)${normal}\n"
+function _omb_theme_PROMPT_COMMAND() {
+  ps_reboot="${bright_yellow}$(show_reboot_required)${_omb_prompt_normal}\n"
 
-  ps_username="$(set_user_color)\u${normal}"
-  ps_uh_separator="${dark_grey}@${normal}"
-  ps_hostname="$(set_host_color)\h${normal}"
+  ps_username="$(set_user_color)\u${_omb_prompt_normal}"
+  ps_uh_separator="${dark_grey}@${_omb_prompt_normal}"
+  ps_hostname="$(set_host_color)\h${_omb_prompt_normal}"
 
-  ps_path="${yellow}\w${normal}"
+  ps_path="${_omb_prompt_olive}\w${_omb_prompt_normal}"
   ps_scm_prompt="${light_grey}$(scm_prompt)"
 
-  ps_user_mark="${normal} ${normal}"
-  ps_user_input="${normal}"
+  ps_user_mark="${_omb_prompt_normal} ${_omb_prompt_normal}"
+  ps_user_input="${_omb_prompt_normal}"
 
   # Set prompt
   PS1="$ps_reboot$(__ps_time)$ps_username$ps_uh_separator$ps_hostname $ps_path $ps_scm_prompt$ps_user_mark$ps_user_input"
@@ -92,10 +92,10 @@ THEME_CLOCK_COLOR=${THEME_CLOCK_COLOR:-"$dark_grey"}
 SCM_THEME_PROMPT_PREFIX=""
 SCM_THEME_PROMPT_SUFFIX=""
 
-SCM_THEME_PROMPT_DIRTY=" ${bold_red}✗${light_grey}"
-SCM_THEME_PROMPT_CLEAN=" ${green}✓${light_grey}"
-SCM_GIT_CHAR="${green}±${light_grey}"
-SCM_SVN_CHAR="${bold_cyan}⑆${light_grey}"
-SCM_HG_CHAR="${bold_red}☿${light_grey}"
+SCM_THEME_PROMPT_DIRTY=" ${_omb_prompt_bold_brown}✗${light_grey}"
+SCM_THEME_PROMPT_CLEAN=" ${_omb_prompt_green}✓${light_grey}"
+SCM_GIT_CHAR="${_omb_prompt_green}±${light_grey}"
+SCM_SVN_CHAR="${_omb_prompt_bold_teal}⑆${light_grey}"
+SCM_HG_CHAR="${_omb_prompt_bold_brown}☿${light_grey}"
 
-safe_append_prompt_command prompt_command
+_omb_util_add_prompt_command _omb_theme_PROMPT_COMMAND

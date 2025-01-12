@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#! bash oh-my-bash.module
 
 # Loads the system's Bash completion modules.
 # If Homebrew is installed (OS X), its Bash completion modules are loaded.
@@ -13,7 +13,7 @@ if [ -f /etc/profile.d/bash_completion.sh ]; then
 fi
 
 
-if [ $(uname) = "Darwin" ] && command -v brew &>/dev/null ; then
+if [ $(uname) = "Darwin" ] && _omb_util_command_exists brew; then
   BREW_PREFIX=$(brew --prefix)
 
   if [ -f "$BREW_PREFIX"/etc/bash_completion ]; then

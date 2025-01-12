@@ -1,29 +1,29 @@
-#!/usr/bin/env bash
+#! bash oh-my-bash.module
 
 # based off of n0qorg
 # looks like, if you're in a git repo:
 # ± ~/path/to (branch ✓) $
 # in glorious red / blue / yellow color scheme
 
-prompt_setter() {
+function _omb_theme_PROMPT_COMMAND {
   # Save history
   history -a
   history -c
   history -r
   # displays user@server in purple
-  # PS1="$red$(scm_char) $purple\u@\h$reset_color:$blue\w$yellow$(scm_prompt_info)$(ruby_version_prompt) $black\$$reset_color "
+  # PS1="$_omb_prompt_brown$(scm_char) $_omb_prompt_purple\u@\h$_omb_prompt_reset_color:$_omb_prompt_navy\w$_omb_prompt_olive$(scm_prompt_info)$(_omb_prompt_print_ruby_env) $_omb_prompt_gray\$$_omb_prompt_reset_color "
   # no user@server
-  PS1="$red$(scm_char) $blue\w$yellow$(scm_prompt_info)$(ruby_version_prompt) $black\$$reset_color "
+  PS1="$_omb_prompt_brown$(scm_char) $_omb_prompt_navy\w$_omb_prompt_olive$(scm_prompt_info)$(_omb_prompt_print_ruby_env) $_omb_prompt_gray\$$_omb_prompt_reset_color "
   PS2='> '
   PS4='+ '
 }
 
-safe_append_prompt_command prompt_setter
+_omb_util_add_prompt_command _omb_theme_PROMPT_COMMAND
 
 SCM_NONE_CHAR='·'
-SCM_THEME_PROMPT_DIRTY=" ${red}✗"
-SCM_THEME_PROMPT_CLEAN=" ${green}✓"
+SCM_THEME_PROMPT_DIRTY=" ${_omb_prompt_brown}✗"
+SCM_THEME_PROMPT_CLEAN=" ${_omb_prompt_green}✓"
 SCM_THEME_PROMPT_PREFIX=" ("
-SCM_THEME_PROMPT_SUFFIX="${yellow})"
+SCM_THEME_PROMPT_SUFFIX="${_omb_prompt_olive})"
 RVM_THEME_PROMPT_PREFIX=" ("
 RVM_THEME_PROMPT_SUFFIX=")"

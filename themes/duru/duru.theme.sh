@@ -1,24 +1,24 @@
-#!/usr/bin/env bash
+#! bash oh-my-bash.module
 
-SCM_THEME_PROMPT_PREFIX="${cyan} on ${green}"
+SCM_THEME_PROMPT_PREFIX="${_omb_prompt_teal} on ${_omb_prompt_green}"
 SCM_THEME_PROMPT_SUFFIX=""
-SCM_THEME_PROMPT_DIRTY=" ${red}with changes"
+SCM_THEME_PROMPT_DIRTY=" ${_omb_prompt_brown}with changes"
 SCM_THEME_PROMPT_CLEAN=""
 
-venv() {
-  if [ ! -z "$VIRTUAL_ENV" ]
+function venv {
+  if [ -n "$VIRTUAL_ENV" ]
   then
     local env=$VIRTUAL_ENV
-    echo "${gray} in ${orange}${env##*/} "
+    _omb_util_print "${gray} in ${_omb_prompt_red}${env##*/} "
   fi
 }
 
-last_two_dirs() {
-  pwd|rev|awk -F / '{print $1,$2}'|rev|sed s_\ _/_|sed "s|$(sed 's,\/,,'<<<$HOME)|~|g"
+function last_two_dirs {
+  pwd|rev|awk -F / '{print $1,$2}'|rev|sed s_\ _/_|sed "s|$(sed 's,\/,,'<<<"$HOME")|~|g"
 }
 
-prompt() {
-  PS1="${yellow}# ${reset_color}$(last_two_dirs)$(scm_prompt_info)${reset_color}$(venv)${reset_color} ${cyan}\n> ${reset_color}"
+function _omb_theme_PROMPT_COMMAND {
+  PS1="${_omb_prompt_olive}# ${_omb_prompt_reset_color}$(last_two_dirs)$(scm_prompt_info)${_omb_prompt_reset_color}$(venv)${_omb_prompt_reset_color} ${_omb_prompt_teal}\n> ${_omb_prompt_reset_color}"
 }
 
-safe_append_prompt_command prompt
+_omb_util_add_prompt_command _omb_theme_PROMPT_COMMAND
