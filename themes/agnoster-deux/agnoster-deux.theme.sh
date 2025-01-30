@@ -272,7 +272,7 @@ prompt_kubecontext() {
 
 prompt_datetime() {
     datetime=$(date "+%a %m/%d %I:%M:%S%p")
-    prompt_segment gray240 default "$datetime"
+    prompt_segment green default "$datetime"
 }
 
 # prints history followed by HH:MM, useful for remembering what
@@ -451,7 +451,7 @@ build_prompt() {
     prompt_newline
     #[[ -z ${AG_NO_HIST+x} ]] && prompt_histdt
     [[ -z ${AG_NO_CONTEXT+x} ]] && prompt_context
-    prompt_kubecontext
+    [[ -z ${AG_NO_KUBECONTEXT+x} ]] || prompt_kubecontext
     prompt_virtualenv
     prompt_datetime
     prompt_end
